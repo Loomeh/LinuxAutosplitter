@@ -3,7 +3,7 @@
 
 **Important: Your kernel must support the process_vm_readv syscall! Most kernels will by default but if you're using a custom kernel or you compiled your kernel yourself then you may want to check.**
 
-This is an autosplitter program that is designed to function similar to ASL as in it reads the value of virtual memory addresses in programs. It then uses the virtual memory values to send commands to LiveSplit via the LiveSplit Server (currently non-functional).
+This is an autosplitter program that is designed to function similar to ASL as in it reads the value of virtual memory addresses in programs. It then uses the virtual memory values to send commands to LiveSplit via the LiveSplit Server.
 
 The code is currently designed to work with Jet Set Radio as an example but it can be changed to work with any game.
 
