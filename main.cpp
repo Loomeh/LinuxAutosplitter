@@ -153,8 +153,6 @@ void Client(int pid, string ipAddress, uint32_t& loadingCondition, uint32_t& sta
 
         if(startCondition != 1 && prevstartCondition == 1) {
             startTimer_res = send(sock, starttimer, strlen(starttimer), 0);
-        } else if(startCondition != 0 && prevstartCondition == 0) {
-            // um do what you want ig
         }
         prevstartCondition = startCondition;
 
