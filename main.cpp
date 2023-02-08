@@ -17,7 +17,11 @@
 
 using namespace std;
 
-uint32_t loading;
+string ipAddress = "";
+
+uint32_t loadingCondition; //isloadingCondition
+uint32_t startCondition; //start
+uint32_t splitCondition; //split
 
 struct StockPid {
     pid_t pid;
@@ -42,24 +46,57 @@ void Func_StockPid(const char *processtarget) {
     }
 }
 
-void ReadProcessMemory(int pid, uint32_t &loading) {
-    struct iovec local, remote;
-    local.iov_base = &loading;
-    local.iov_len = sizeof(loading);
-    remote.iov_base = (void *) 0x98FAAC;
-    remote.iov_len = sizeof(loading);
+void ReadProcessMemory(int pid, uint32_t &loadingCondition, uint32_t &startCondition, uint32_t &splitCondition) {
+    //loadingCondition
+    struct iovec loadingConditionLocal, loadingConditionRemote;
+    loadingConditionLocal.iov_base = &loadingCondition;
+    loadingConditionLocal.iov_len = sizeof(loadingCondition);
+    loadingConditionRemote.iov_base = (void *) 0x98FAAC;
+    loadingConditionRemote.iov_len = sizeof(loadingCondition);
 
-    ssize_t nread = process_vm_readv(pid, &local, 1, &remote, 1, 0);
-    if(nread == -1) {
+    ssize_t loadingConditionnread = process_vm_readv(pid, &loadingConditionLocal, 1, &loadingConditionRemote, 1, 0);
+    if(loadingConditionnread == -1) {
         cout << "Error reading process memory: " << strerror(errno) << endl;
         exit(-1);
-    } else if(nread != remote.iov_len) {
-        cout << "Error reading process memory: short read of " << nread << " bytes" << endl;
+    } else if(loadingConditionnread != loadingConditionRemote.iov_len) {
+        cout << "Error reading process memory: short read of " << loadingConditionnread << " bytes" << endl;
+        exit(-1);
+    }
+
+    //startCondition
+    struct iovec startConditionLocal, startConditionRemote;
+    startConditionLocal.iov_base = &startCondition;
+    startConditionLocal.iov_len = sizeof(startCondition);\
+    startConditionRemote.iov_base = (void *) 0xB5A278;
+    startConditionRemote.iov_len = sizeof(startCondition);
+
+    ssize_t startConditionnread = process_vm_readv(pid, &startConditionLocal, 1, &startConditionRemote, 1, 0);
+    if(startConditionnread == -1) {
+        cout << "Error reading process memory: " << strerror(errno) << endl;
+        exit(-1);
+    } else if(startConditionnread != startConditionRemote.iov_len) {
+        cout << "Error reading process memory: short read of " << startConditionnread << " bytes" << endl;
+        exit(-1);
+    }
+
+    //splitCondition
+    struct iovec splitConditionLocal, splitConditionRemote;
+    splitConditionLocal.iov_base = &splitCondition;
+    splitConditionLocal.iov_len = sizeof(splitCondition);\
+    splitConditionRemote.iov_base = (void *) 0x98FB1C;
+    splitConditionRemote.iov_len = sizeof(splitCondition);
+
+    ssize_t splitConditionnread = process_vm_readv(pid, &splitConditionLocal, 1, &splitConditionRemote, 1, 0);
+    if(splitConditionnread == -1) {
+        cout << "Error reading process memory: " << strerror(errno) << endl;
+        exit(-1);
+    } else if(splitConditionnread != splitConditionRemote.iov_len) {
+        cout << "Error reading process memory: short read of " << splitConditionnread << " bytes" << endl;
         exit(-1);
     }
 }
 
-void Client(int pid, uint32_t& loading) {
+void Client(int pid, string ipAddress, uint32_t& loadingCondition, uint32_t& startCondition, uint32_t& splitCondition) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock == -1) {
         cout << "Socket error: " << strerror(errno) << endl;
@@ -67,7 +104,6 @@ void Client(int pid, uint32_t& loading) {
     }
 
     int port = 16834;
-    string ipAddress = "192.168.1.193";
 
     struct sockaddr_in hint;
     hint.sin_family = AF_INET;
@@ -86,6 +122,8 @@ void Client(int pid, uint32_t& loading) {
     const char* pausegametime = "pausegametime\r\n";
     const char* unpausegametime = "unpausegametime\r\n";
     const char* initgametime = "initgametime\r\n";
+    const char* starttimer = "starttimer\r\n";
+    const char* split = "split\r\n";
 
     int sendRes = send(sock, initgametime, strlen(initgametime), 0);
     if (sendRes == -1) {
@@ -93,41 +131,60 @@ void Client(int pid, uint32_t& loading) {
         exit(EXIT_FAILURE);
     }
 
-    uint32_t prevLoading = 0;
+    uint32_t prevloadingCondition = 0;
     int pause_res = 0;
     int unpause_res = 0;
+
+    uint32_t prevstartCondition = 0;
+    int startTimer_res = 0;
+
+    uint32_t prevsplitCondition = 0;
+    int split_res = 0;
+    
     while (true) {
-        ReadProcessMemory(pid, loading);
-        if (loading == 1 && prevLoading != 1) {
+        ReadProcessMemory(pid, loadingCondition, startCondition, splitCondition);
+
+        if (loadingCondition == 1 && prevloadingCondition != 1) {
             pause_res = send(sock, pausegametime, strlen(pausegametime), 0);
-        } else if (loading == 0 && prevLoading != 0) {
+        } else if (loadingCondition == 0 && prevloadingCondition != 0) {
             unpause_res = send(sock, unpausegametime, strlen(unpausegametime), 0);
         }
-        prevLoading = loading;
+        prevloadingCondition = loadingCondition;
 
-        // Check if jet set radio is running every 5 seconds and if not, start over
-        if (pause_res == -1 || unpause_res == -1) {
-            close(sock);
-            cout << "Error sending message, retrying in 5 seconds\n";
-            sleep(5);
-            return Client(pid, loading);
+        if(startCondition != 1 && prevstartCondition == 1) {
+            startTimer_res = send(sock, starttimer, strlen(starttimer), 0);
+        } else if(startCondition != 0 && prevstartCondition == 0) {
+            // um do what you want ig
         }
+        prevstartCondition = startCondition;
+
+        if(splitCondition == 1 && prevsplitCondition != 1) {
+            split_res = send(sock, split, strlen(split), 0);
+        }
+        prevsplitCondition = splitCondition;
     }
 }
 
 
 int main(int argc, char *argv[]) {
+
+    cout << "What is your local IP address (LiveSplit Server settings will tell you if you don't know.)\n" << endl;
+    cin >> ipAddress;
+
     const char *processName = "pidof jetsetradio.exe";
     while (true) {
         Func_StockPid(processName);
         if (stockthepid.pid == 0) {
             cout << "Jet Set Radio isn't running. Retrying in 5 seconds...\n";
             sleep(5);
+            system("clear");
         } else {
             break;
         }
     }
-    uint32_t loading = 0;
-    Client(stockthepid.pid, loading);
+    uint32_t loadingCondition = 0;
+    uint32_t startCondition = 0;
+    uint32_t splitCondition = 0;
+    Client(stockthepid.pid, ipAddress, loadingCondition, startCondition, splitCondition);
     return 0;
 }
