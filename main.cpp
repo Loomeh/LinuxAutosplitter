@@ -2,18 +2,10 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-#include <fcntl.h>
 #include <errno.h>
 #include <sys/uio.h>
-#include <stdint.h>
 #include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/ptrace.h>
-#include <stdlib.h>
-#include <netdb.h>
 #include <arpa/inet.h>
-#include <chrono>
-#include <thread>
 
 using namespace std;
 
@@ -38,10 +30,10 @@ void Func_StockPid(const char *processtarget) {
     stockthepid.pid = strtoul(stockthepid.buff, nullptr, 10);
 
     if (stockthepid.pid == 0) {
-        cout << "Jet Set Radio isn't running.\n";
+        cout << "Game isn't running.\n";
         pclose(stockthepid.pid_pipe);
     } else {
-        cout << "Jet Set Radio is running - PID NUMBER -> " << stockthepid.pid << endl;
+        cout << "Game is running - PID NUMBER -> " << stockthepid.pid << endl;
         pclose(stockthepid.pid_pipe);
     }
 }
@@ -132,32 +124,33 @@ void Client(int pid, string ipAddress, uint32_t& loadingCondition, uint32_t& sta
     }
 
     uint32_t prevloadingCondition = 0;
-    int pause_res = 0;
-    int unpause_res = 0;
+
 
     uint32_t prevstartCondition = 0;
-    int startTimer_res = 0;
+
 
     uint32_t prevsplitCondition = 0;
-    int split_res = 0;
+
     
     while (true) {
         ReadProcessMemory(pid, loadingCondition, startCondition, splitCondition);
 
         if (loadingCondition == 1 && prevloadingCondition != 1) {
-            pause_res = send(sock, pausegametime, strlen(pausegametime), 0);
+            send(sock, pausegametime, strlen(pausegametime), 0);
         } else if (loadingCondition == 0 && prevloadingCondition != 0) {
-            unpause_res = send(sock, unpausegametime, strlen(unpausegametime), 0);
+            send(sock, unpausegametime, strlen(unpausegametime), 0);
         }
         prevloadingCondition = loadingCondition;
 
         if(startCondition != 1 && prevstartCondition == 1) {
-            startTimer_res = send(sock, starttimer, strlen(starttimer), 0);
+            send(sock, starttimer, strlen(starttimer), 0);
+        } else if(startCondition != 0 && prevstartCondition == 0) {
+            // um do what you want ig
         }
         prevstartCondition = startCondition;
 
         if(splitCondition == 1 && prevsplitCondition != 1) {
-            split_res = send(sock, split, strlen(split), 0);
+            send(sock, split, strlen(split), 0);
         }
         prevsplitCondition = splitCondition;
     }
@@ -173,16 +166,13 @@ int main(int argc, char *argv[]) {
     while (true) {
         Func_StockPid(processName);
         if (stockthepid.pid == 0) {
-            cout << "Jet Set Radio isn't running. Retrying in 5 seconds...\n";
+            cout << "Game isn't running. Retrying in 5 seconds...\n";
             sleep(5);
             system("clear");
         } else {
             break;
         }
     }
-    uint32_t loadingCondition = 0;
-    uint32_t startCondition = 0;
-    uint32_t splitCondition = 0;
     Client(stockthepid.pid, ipAddress, loadingCondition, startCondition, splitCondition);
     return 0;
 }
