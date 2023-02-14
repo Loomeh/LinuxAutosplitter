@@ -7,6 +7,21 @@ This is an autosplitter program that is designed to function similar to ASL as i
 
 **If you would like to see an example of this being used for a real game then look [here](https://github.com/Loomeh/JSRLinuxAutosplitter)**
 
+## Clearing some things up
+When I posted this on Reddit a lot of people were confused on what this is and how to use this. Hopefully this section will answer those questions.
+
+First off, this repo isn't meant to be used by runners. This is meant to be used by autosplitter developers as a base as all addresses are hardcoded. If you are a runner, **DON'T USE THIS!** Look for another repo that has been made for your specific game.
+
+## FAQ
+### How are you supposed to run this?
+LiveSplit through Wine.
+
+### Does this require elevated permissions (sudo)?
+No. If it does then there's an error.
+
+### Does this work with LiveSplit One?
+No.
+
 ## How to port ASL scripts to LinuxAutoSplitter
 ### Addresses
 Addresses on Linux are different from Windows so they need to be converted. Luckily, this is pretty straightforward to do.
