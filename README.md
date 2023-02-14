@@ -37,11 +37,10 @@ The current and old flags work pretty similarly but it's not too hard to get con
 if(bossGraffiti == 7 && prevBossGraffiti != 7) 
 {
     split_res = send(sock, split, strlen(split), 0);
-
-    else if(rankingScreen == 1 && prevRankingScreen != 1)
-    {
-            split_res = send(sock, split, strlen(split), 0);
-    }
+}
+else if(rankingScreen == 1 && prevRankingScreen != 1)
+{
+    split_res = send(sock, split, strlen(split), 0);
 }
 ```
 
