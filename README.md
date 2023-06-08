@@ -7,6 +7,14 @@ This is an autosplitter program that is designed to function similar to Auto Spl
 
 **If you would like to see an example of this being used for a real game then look [here](https://github.com/Loomeh/JSRLinuxAutosplitter)**
 
+## How to set the library up
+First, find out if your game runs in x86 or x64. To do this, open a terminal and type `file <executable>`.
+
+If it returns `ELF 32-bit LSB executable`, it's 32 bit.
+If it returns `ELF 64-bit LSB executable`, it's 64 bit.
+
+Then copy the .hpp files from the appropriate x86 or x64 folder into your project files.
+
 ## Clearing some things up
 When I posted this on Reddit a lot of people were confused on what this is and how to use this. Hopefully this section will answer those questions.
 
@@ -25,4 +33,4 @@ No.
 
 ## TODO
 1. Make the code look decent
-2. Format the code into a library that can be referenced.
+2. ~~Format the code into a library that can be referenced.~~
