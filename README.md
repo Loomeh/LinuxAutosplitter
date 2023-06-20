@@ -1,3 +1,6 @@
+# WARNING: This repo is deprecated! Go [here](https://github.c.om/wins1ey/LinuxAutoSplitter)!
+
+
 # LinuxAutosplitter
 ## A configurable autosplitter program for GNU/Linux systems that uses the LiveSplit Server component
 
