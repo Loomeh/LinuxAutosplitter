@@ -1,4 +1,4 @@
-# WARNING: This repo is deprecated! Go [here](https://github.com/wins1ey/LinuxAutoSplitter)!
+# WARNING: This repo is deprecated! Development has moved to [LibreSplit](https://libresplit.loomeh.is-a.dev)!
 
 
 # LinuxAutosplitter
